@@ -65,3 +65,61 @@ Memory: modifiable, last the duration of the function
 Calldata: cannot be modified, last the duration of the function
 
 To interact with a contract, you need ADDRESS + ABI (Application Binary Interface)
+```solidity
+using PriceConverter for uint256;
+// Allows calling PriceConverter methods on uint256 type
+uint256 num;
+num.PriceConverterMethod();
+```
+
+Prior to 0.8, math is unchecked, meaning `uint8 num = 255; num += 1 => 0 // wrap over`
+After 0.8, it will throw error, can do `unchecked` to be more has efficient if the num will never be over limit
+
+`constant` and `immutable` can help save gas
+- `constant` variable is set at compile-time
+- `immutable` is set at run time in constructor
+
+Use `modifier` to enhance function
+```
+function sayHi(string memory name) {
+  return string.concat("Hello ", name)
+}
+
+modifier sayHi(string memory name) {
+ require(bytes(name).length > 0, "Name is empty");
+ _; // Execute the rest of the function
+)
+```
+
+`receive` and `fallback` trigger when ETH is sent but not match any function signature, in other words, just plainly send ETH to contract would trigger either
+```
+receive external payable {
+ // Function gets call when someone sends ETH
+}
+
+receive external payable {
+ // Function gets call when someone sends ETH with data
+}
+
+// Explainer from: https://solidity-by-example.org/fallback/
+// Ether is sent to contract
+//      is msg.data empty?
+//          /   \ 
+//         yes  no
+//         /     \
+//    receive()?  fallback() 
+//     /   \ 
+//   yes   no
+//  /        \
+//receive()  fallback()
+```
+
+A use case for `receive` would be to wrap it around another function
+```
+function fund public payable() {...}
+
+receive external payable() {
+ fund();
+}
+```
+
